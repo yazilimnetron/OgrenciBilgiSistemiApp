@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,9 +20,11 @@ namespace OgrenciBilgiSistemi.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult Giris() => View();
 
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Giris(KullaniciModel model)
         {
@@ -69,8 +72,7 @@ namespace OgrenciBilgiSistemi.Controllers
 
             var authProperties = new AuthenticationProperties
             {
-                IsPersistent = model.BeniHatirla,
-                ExpiresUtc = DateTimeOffset.UtcNow.AddHours(1)
+                IsPersistent = model.BeniHatirla
             };
 
             await HttpContext.SignInAsync(
@@ -81,12 +83,14 @@ namespace OgrenciBilgiSistemi.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        [Authorize]
         public async Task<IActionResult> Cikis()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Giris", "Hesaplar");
         }
 
+        [AllowAnonymous]
         public IActionResult YetkisizGiris() => View();
     }
 }
