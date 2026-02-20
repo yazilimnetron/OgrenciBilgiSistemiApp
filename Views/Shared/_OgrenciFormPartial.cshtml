@@ -1,0 +1,229 @@
+﻿@model OgrenciBilgiSistemi.ViewModels.OgrenciVeliFormVm
+@using OgrenciBilgiSistemi.Models.Enums
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+@{
+    var action = !string.IsNullOrWhiteSpace(Model.Action)
+        ? Model.Action
+        : "Ekle";
+
+    var submitText = !string.IsNullOrWhiteSpace(Model.SubmitText)
+        ? Model.SubmitText
+        : "Kaydet";
+
+    var includeId = Model.IncludeId;
+
+    var personeller = Model.Personeller ?? new List<SelectListItem>();
+    var birimler = Model.Birimler ?? Enumerable.Empty<SelectListItem>();
+}
+
+<div class="viewport-scroller">
+    <div class="fixed-canvas">
+        <div class="container-fluid py-4">
+            <div class="row justify-content-center">
+                <div class="col-lg-10 col-xxl-9">
+                    <div class="card rounded-3 border">
+                        <div class="card-header bg-primary text-white text-center">
+                            <h4 class="fw-bold mb-0">
+                                @(action == "Guncelle"
+                                                                ? "Öğrenci ve Veli Bilgilerini Güncelle"
+                                                                : "Yeni Öğrenci + Veli Ekle")
+                            </h4>
+                        </div>
+
+                        <div class="card-body p-4">
+                            <form method="post"
+                                  asp-action="@action"
+                                  enctype="multipart/form-data"
+                                  autocomplete="off"
+                                  id="ogrenciForm">
+                                @Html.AntiForgeryToken()
+
+                                @if (includeId)
+                                {
+                                    <input type="hidden" asp-for="Ogrenci.OgrenciId" />
+                                }
+
+                                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                                <div class="row g-4">
+                                    <!-- SOL TARAF: ÖĞRENCİ -->
+                                    <div class="col-12 col-xl-6">
+                                        <div class="border rounded-3 p-3 h-100">
+                                            <h5 class="fw-bold text-primary mb-3">Öğrenci Bilgileri</h5>
+
+                                            <div class="row g-3">
+                                                <!-- Ad Soyad -->
+                                                <div class="col-md-6">
+                                                    <label asp-for="Ogrenci.OgrenciAdSoyad" class="form-label fw-semibold">Adı Soyadı</label>
+                                                    <input asp-for="Ogrenci.OgrenciAdSoyad" class="form-control" required id="Ogrenci_OgrenciAdSoyad" />
+                                                    <span asp-validation-for="Ogrenci.OgrenciAdSoyad" class="text-danger"></span>
+                                                </div>
+
+                                                <!-- Öğrenci No -->
+                                                <div class="col-md-6">
+                                                    <label asp-for="Ogrenci.OgrenciNo" class="form-label fw-semibold">Numarası</label>
+                                                    <input asp-for="Ogrenci.OgrenciNo" class="form-control" pattern="^\d{1,20}$" required placeholder="Örn: 202512345" />
+                                                    <span asp-validation-for="Ogrenci.OgrenciNo" class="text-danger"></span>
+                                                </div>
+
+                                                <!-- Görsel -->
+                                                <div class="col-md-6">
+                                                    <label asp-for="Ogrenci.OgrenciGorselFile" class="form-label fw-semibold">Resim</label>
+
+                                                    @if (!string.IsNullOrWhiteSpace(Model.Ogrenci.OgrenciGorsel))
+                                                    {
+                                                        var fileName = System.IO.Path.GetFileName(Model.Ogrenci.OgrenciGorsel);
+
+                                                        <div class="mb-2">
+                                                            <img src="@Url.Content(Model.Ogrenci.OgrenciGorsel)"
+                                                                 alt="Mevcut Öğrenci Fotoğrafı"
+                                                                 class="img-thumbnail d-block"
+                                                                 style="max-height:80px;" />
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="small text-muted mb-2">Henüz resim yüklenmemiş.</div>
+                                                    }
+
+                                                    <input asp-for="Ogrenci.OgrenciGorselFile"
+                                                           type="file"
+                                                           class="form-control"
+                                                           accept=".jpg,.jpeg,.png" />
+
+                                                    <span asp-validation-for="Ogrenci.OgrenciGorselFile" class="text-danger"></span>
+                                                </div>
+
+
+
+                                                <!-- Kart No -->
+                                                <div class="col-md-6">
+                                                    <label asp-for="Ogrenci.OgrenciKartNo" class="form-label fw-semibold">Kart No</label>
+                                                    <input asp-for="Ogrenci.OgrenciKartNo" class="form-control" />
+                                                    <span asp-validation-for="Ogrenci.OgrenciKartNo" class="text-danger"></span>
+                                                </div>
+
+                                                <!-- Öğretmen -->
+                                                <div class="col-md-6">
+                                                    <label asp-for="Ogrenci.PersonelId" class="form-label fw-semibold">Öğretmen</label>
+                                                    <select asp-for="Ogrenci.PersonelId" class="form-select" asp-items="personeller">
+                                                        <option value="">-- Seçiniz --</option>
+                                                    </select>
+                                                    <span asp-validation-for="Ogrenci.PersonelId" class="text-danger"></span>
+                                                </div>
+
+                                                <!-- Birim / Sınıf -->
+                                                <div class="col-md-6">
+                                                    <label asp-for="Ogrenci.BirimId" class="form-label fw-semibold">Sınıf</label>
+                                                    <select asp-for="Ogrenci.BirimId" class="form-select" asp-items="birimler">
+                                                    </select>
+                                                    <span asp-validation-for="Ogrenci.BirimId" class="text-danger"></span>
+                                                </div>
+
+                                                <!-- Öğle Çıkışı -->
+                                                <div class="col-md-6">
+                                                    <label asp-for="Ogrenci.OgrenciCikisDurumu" class="form-label fw-semibold">Öğle Çıkışı</label>
+                                                    <select asp-for="Ogrenci.OgrenciCikisDurumu" class="form-select"
+                                                            asp-items="Html.GetEnumSelectList<OglenCikisDurumu>()">
+                                                    </select>
+                                                    <span asp-validation-for="Ogrenci.OgrenciCikisDurumu" class="text-danger"></span>
+                                                </div>
+
+                                                <!-- Yemekhane (Bu Ay) -->
+                                                <div class="col-md-6">
+                                                    <label asp-for="BuAyYemekhaneAktif" class="form-label fw-semibold">Yemekhane (Bu Ay)</label>
+                                                    <select asp-for="BuAyYemekhaneAktif" class="form-select">
+                                                        <option value="true">Evet</option>
+                                                        <option value="false">Hayır</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- SAĞ TARAF: VELİ -->
+                                    <div class="col-12 col-xl-6">
+                                        <div class="border rounded-3 p-3 h-100 bg-light">
+                                            <h5 class="fw-bold text-primary mb-3">Veli Bilgileri</h5>
+
+                                            <div class="row g-3">
+                                                <!-- Veli Ad Soyad -->
+                                                <div class="col-md-12">
+                                                    <label asp-for="Veli.VeliAdSoyad" class="form-label fw-semibold"></label>
+                                                    <input asp-for="Veli.VeliAdSoyad" class="form-control" />
+                                                    <span asp-validation-for="Veli.VeliAdSoyad" class="text-danger"></span>
+                                                </div>
+
+                                                <!-- Telefon -->
+                                                <div class="col-md-6">
+                                                    <label asp-for="Veli.VeliTelefon" class="form-label fw-semibold"></label>
+                                                    <input asp-for="Veli.VeliTelefon" class="form-control" placeholder="5XXXXXXXXX" />
+                                                    <span asp-validation-for="Veli.VeliTelefon" class="text-danger"></span>
+                                                </div>
+
+                                                <!-- Yakınlık -->
+                                                <div class="col-md-6">
+                                                    <label asp-for="Veli.VeliYakinlik" class="form-label fw-semibold"></label>
+                                                    <select asp-for="Veli.VeliYakinlik" class="form-select"
+                                                            asp-items="Html.GetEnumSelectList<YakinlikTipi>()">
+                                                        <option value="">-- Seçiniz --</option>
+                                                    </select>
+                                                    <span asp-validation-for="Veli.VeliYakinlik" class="text-danger"></span>
+                                                </div>
+
+                                                <!-- Meslek -->
+                                                <div class="col-md-6">
+                                                    <label asp-for="Veli.VeliMeslek" class="form-label fw-semibold"></label>
+                                                    <input asp-for="Veli.VeliMeslek" class="form-control" />
+                                                    <span asp-validation-for="Veli.VeliMeslek" class="text-danger"></span>
+                                                </div>
+
+                                                <!-- İş Yeri -->
+                                                <div class="col-md-6">
+                                                    <label asp-for="Veli.VeliIsYeri" class="form-label fw-semibold"></label>
+                                                    <input asp-for="Veli.VeliIsYeri" class="form-control" />
+                                                    <span asp-validation-for="Veli.VeliIsYeri" class="text-danger"></span>
+                                                </div>
+
+                                                <!-- E-posta -->
+                                                <div class="col-md-12">
+                                                    <label asp-for="Veli.VeliEmail" class="form-label fw-semibold"></label>
+                                                    <input asp-for="Veli.VeliEmail" class="form-control" />
+                                                    <span asp-validation-for="Veli.VeliEmail" class="text-danger"></span>
+                                                </div>
+
+                                                <!-- Adres -->
+                                                <div class="col-md-12">
+                                                    <label asp-for="Veli.VeliAdres" class="form-label fw-semibold"></label>
+                                                    <textarea asp-for="Veli.VeliAdres" class="form-control" rows="3"></textarea>
+                                                    <span asp-validation-for="Veli.VeliAdres" class="text-danger"></span>
+                                                </div>
+
+                                                <!-- Veli Durum -->
+                                                <div class="col-md-6 form-check mt-3">
+                                                    <input asp-for="Veli.VeliDurum" class="form-check-input" />
+                                                    <label asp-for="Veli.VeliDurum" class="form-check-label"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Butonlar -->
+                                <div class="d-flex justify-content-between gap-2 mt-3">
+                                    <a asp-action="Index" class="btn btn-outline-secondary">
+                                        <i class="bi bi-arrow-left"></i> Geri Dön
+                                    </a>
+                                    <button type="submit" class="btn btn-primary fw-bold" id="submitBtn">
+                                        <i class="bi bi-save"></i> @submitText
+                                    </button>
+                                </div>
+                            </form>
+                        </div> <!-- /card-body -->
+                    </div> <!-- /card -->
+                </div>
+            </div>
+        </div> <!-- /container-fluid -->
+    </div>
+</div>
