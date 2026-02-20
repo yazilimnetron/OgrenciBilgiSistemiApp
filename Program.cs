@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using OgrenciBilgiSistemi.Abstractions;
 using OgrenciBilgiSistemi.Data;
@@ -21,7 +22,10 @@ builder.Services.AddDbContextPool<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 // 💼 Servislerin eklenmesi
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add(new AuthorizeFilter());
+});
 builder.Services.AddScoped<IAidatService, AidatService>();
 builder.Services.AddScoped<IGecisService, GecisService>();
 builder.Services.AddSingleton<IZKTecoService, ZKTecoService>();
@@ -51,8 +55,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     {
         options.LoginPath = "/Hesaplar/Giris";
         options.AccessDeniedPath = "/Hesaplar/YetkisizGiris";
-        options.ExpireTimeSpan = TimeSpan.FromDays(1);
-        options.SlidingExpiration = true;                
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+        options.SlidingExpiration = true;
         options.Cookie.IsEssential = true;
     });
 
@@ -64,35 +68,55 @@ builder.Services.AddAuthorization(options =>
 
 var app = builder.Build();
 
-// 🌱 Admin kullanıcı seed işlemi (şifre hashleme)
+// 🌱 Bootstrap admin kullanıcı seed işlemi (güvenli kurulum)
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("BootstrapAdmin");
     var passwordHasher = new PasswordHasher<KullaniciModel>();
+    var bootstrapSection = builder.Configuration.GetSection("BootstrapAdmin");
 
-    var admin = context.Kullanicilar.FirstOrDefault(k => k.KullaniciAdi == "admin");
+    var bootstrapEnabled = bootstrapSection.GetValue<bool?>("Enabled") ?? true;
+    var bootstrapUsername = bootstrapSection["Username"];
+    var bootstrapPassword = bootstrapSection["Password"];
 
-    if (admin != null)
+    if (!bootstrapEnabled)
     {
-        if (string.IsNullOrWhiteSpace(admin.Sifre) || !admin.Sifre.StartsWith("AQ"))
-        {
-            admin.Sifre = passwordHasher.HashPassword(admin, "admin123");
-            context.SaveChanges();
-        }
+        logger.LogInformation("Bootstrap admin oluşturma devre dışı bırakıldı (BootstrapAdmin:Enabled=false).");
+    }
+    else if (string.IsNullOrWhiteSpace(bootstrapUsername) || string.IsNullOrWhiteSpace(bootstrapPassword))
+    {
+        logger.LogWarning(
+            "Bootstrap admin atlandı. BootstrapAdmin:Username ve BootstrapAdmin:Password ayarlanmalı (tercihen environment variable/secrets ile).");
     }
     else
     {
-        var yeniAdmin = new KullaniciModel
+        var admin = context.Kullanicilar.FirstOrDefault(k => k.KullaniciAdi == bootstrapUsername);
+
+        if (admin != null)
         {
-            KullaniciAdi = "admin",
-            AdminMi = true,
-            KullaniciDurum = true,
-            BeniHatirla = false,
-            BirimId = null
-        };
-        yeniAdmin.Sifre = passwordHasher.HashPassword(yeniAdmin, "admin123");
-        context.Kullanicilar.Add(yeniAdmin);
-        context.SaveChanges();
+            if (string.IsNullOrWhiteSpace(admin.Sifre) || !admin.Sifre.StartsWith("AQ"))
+            {
+                admin.Sifre = passwordHasher.HashPassword(admin, bootstrapPassword);
+                context.SaveChanges();
+                logger.LogInformation("Mevcut bootstrap admin şifresi güvenli hash ile güncellendi.");
+            }
+        }
+        else
+        {
+            var yeniAdmin = new KullaniciModel
+            {
+                KullaniciAdi = bootstrapUsername,
+                AdminMi = true,
+                KullaniciDurum = true,
+                BeniHatirla = false,
+                BirimId = null
+            };
+            yeniAdmin.Sifre = passwordHasher.HashPassword(yeniAdmin, bootstrapPassword);
+            context.Kullanicilar.Add(yeniAdmin);
+            context.SaveChanges();
+            logger.LogInformation("Bootstrap admin kullanıcısı oluşturuldu: {Username}", bootstrapUsername);
+        }
     }
 }
 
