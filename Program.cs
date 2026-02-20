@@ -11,6 +11,7 @@ using OgrenciBilgiSistemi.Services.Implementations;
 using OgrenciBilgiSistemi.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
+var environment = builder.Environment;
 
 // 🔗 Veritabanı bağlantısı
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -18,6 +19,13 @@ if (string.IsNullOrEmpty(connectionString))
 {
     throw new InvalidOperationException("Veritabanı bağlantı dizesi (DefaultConnection) bulunamadı.");
 }
+
+if (environment.IsProduction() && connectionString.Contains("DESKTOP-", StringComparison.OrdinalIgnoreCase))
+{
+    throw new InvalidOperationException(
+        "Production ortamında makineye bağımlı bağlantı dizesi tespit edildi. ConnectionStrings__DefaultConnection değerini environment/secrets ile verin.");
+}
+
 builder.Services.AddDbContextPool<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
 
@@ -41,6 +49,9 @@ builder.Services.AddScoped<IPersonelService, PersonelService>();
 builder.Services.AddScoped<IZiyaretciService, ZiyaretciService>();
 builder.Services.AddScoped<IKitapService, KitapService>();
 builder.Services.AddScoped<IKitapDetayService, KitapDetayService>();
+
+builder.Services.AddHostedService<CardReadEventHandlerService>();
+builder.Services.AddHostedService<ZkConnectionMonitorHostedService>();
 
 
 // 🔔 SignalR yapılandırması
@@ -76,9 +87,16 @@ using (var scope = app.Services.CreateScope())
     var passwordHasher = new PasswordHasher<KullaniciModel>();
     var bootstrapSection = builder.Configuration.GetSection("BootstrapAdmin");
 
-    var bootstrapEnabled = bootstrapSection.GetValue<bool?>("Enabled") ?? true;
+    var bootstrapEnabled = bootstrapSection.GetValue<bool?>("Enabled") ?? false;
     var bootstrapUsername = bootstrapSection["Username"];
     var bootstrapPassword = bootstrapSection["Password"];
+
+    if (app.Environment.IsProduction() && bootstrapEnabled &&
+        (string.IsNullOrWhiteSpace(bootstrapUsername) || string.IsNullOrWhiteSpace(bootstrapPassword)))
+    {
+        throw new InvalidOperationException(
+            "Production ortamında BootstrapAdmin etkinse BootstrapAdmin:Username ve BootstrapAdmin:Password zorunludur.");
+    }
 
     if (!bootstrapEnabled)
     {

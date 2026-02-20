@@ -9,6 +9,7 @@ using OgrenciBilgiSistemi.ViewModels;
 
 namespace OgrenciBilgiSistemi.Controllers
 {
+    [Authorize(Policy = "AdminOnly")]
    public class KullanicilarController : Controller
     {
         private readonly AppDbContext _context;
@@ -305,17 +306,7 @@ namespace OgrenciBilgiSistemi.Controllers
             return result;
         }
 
-        //private List<int> GetSelectedMenuIds(List<MenuOgeAssignmentVm> menus)
-        //{
-        //    var ids = new List<int>();
-        //    foreach (var menu in menus)
-        //    {
-        //        if (menu.IsAssigned) ids.Add(menu.MenuOgeId);
-        //        if (menu.Children != null && menu.Children.Count > 0)
-        //            ids.AddRange(GetSelectedMenuIds(menu.Children));
-        //    }
-        //    return ids;
-        //}
+
 
         private async Task<List<SelectListItem>> GetBirimlerSelectList()
         {

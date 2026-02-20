@@ -14,26 +14,26 @@ public class HomeController : Controller
 
     public IActionResult Index() => View();
 
-    // --- KPI'lar (bugünün özeti) ---
+    // --- KPI'lar (bugÃ¼nÃ¼n Ã¶zeti) ---
     [HttpGet]
     public async Task<IActionResult> DashboardStats()
     {
         var today = DateTime.Today;
         var tomorrow = today.AddDays(1);
 
-        // BUGÜN Yemekhane GÝRÝÞ: Istasyon=Yemekhane + Tip=GÝRÝÞ + OgrenciGTarih aralýðý
+        // BUGÃœN Yemekhane GÄ°RÄ°Åž: Istasyon=Yemekhane + Tip=GÄ°RÄ°Åž + OgrenciGTarih aralÄ±ÄŸÄ±
         var bugunYemekhaneGiris = await _db.OgrenciDetaylar.AsNoTracking()
             .Where(x => x.IstasyonTipi == IstasyonTipi.Yemekhane
-                     && x.OgrenciGecisTipi == "GÝRÝÞ"
+                     && x.OgrenciGecisTipi == "GÄ°RÄ°Åž"
                      && x.OgrenciGTarih != null
                      && x.OgrenciGTarih! >= today
                      && x.OgrenciGTarih! < tomorrow)
             .CountAsync();
 
-        // BUGÜN Anakapý ÇIKIÞ: Istasyon=AnaKapi + Tip=ÇIKIÞ + OgrenciCTarih aralýðý
+        // BUGÃœN AnakapÄ± Ã‡IKIÅž: Istasyon=AnaKapi + Tip=Ã‡IKIÅž + OgrenciCTarih aralÄ±ÄŸÄ±
         var bugunAnakapiCikis = await _db.OgrenciDetaylar.AsNoTracking()
             .Where(x => x.IstasyonTipi == IstasyonTipi.AnaKapi
-                     && x.OgrenciGecisTipi == "ÇIKIÞ"
+                     && x.OgrenciGecisTipi == "Ã‡IKIÅž"
                      && x.OgrenciCTarih != null
                      && x.OgrenciCTarih! >= today
                      && x.OgrenciCTarih! < tomorrow)
@@ -49,7 +49,7 @@ public class HomeController : Controller
         });
     }
 
-    // --- Çizgi grafik: içinde bulunulan ayýn günlerine göre (Yemekhane GÝRÝÞ / Anakapý ÇIKIÞ) ---
+    // --- Ã‡izgi grafik: iÃ§inde bulunulan ayÄ±n gÃ¼nlerine gÃ¶re (Yemekhane GÄ°RÄ°Åž / AnakapÄ± Ã‡IKIÅž) ---
     [HttpGet]
     public async Task<IActionResult> DashboardSeries(int? yil, int? ay)
     {
@@ -63,7 +63,7 @@ public class HomeController : Controller
 
         var ymk = await _db.OgrenciDetaylar.AsNoTracking()
             .Where(x => x.IstasyonTipi == IstasyonTipi.Yemekhane
-                     && x.OgrenciGecisTipi == "GÝRÝÞ"
+                     && x.OgrenciGecisTipi == "GÄ°RÄ°Åž"
                      && x.OgrenciGTarih != null
                      && x.OgrenciGTarih! >= start
                      && x.OgrenciGTarih! < end)
@@ -73,7 +73,7 @@ public class HomeController : Controller
 
         var ank = await _db.OgrenciDetaylar.AsNoTracking()
             .Where(x => x.IstasyonTipi == IstasyonTipi.AnaKapi
-                     && x.OgrenciGecisTipi == "ÇIKIÞ"
+                     && x.OgrenciGecisTipi == "Ã‡IKIÅž"
                      && x.OgrenciCTarih != null
                      && x.OgrenciCTarih! >= start
                      && x.OgrenciCTarih! < end)
@@ -81,7 +81,7 @@ public class HomeController : Controller
             .Select(g => new { Gun = g.Key.d, Adet = g.Count() })
             .ToListAsync();
 
-        // Gün bazlý dizileri doldur
+        // GÃ¼n bazlÄ± dizileri doldur
         var ymkMap = ymk.ToDictionary(x => x.Gun, x => x.Adet);
         var ankMap = ank.ToDictionary(x => x.Gun, x => x.Adet);
 
