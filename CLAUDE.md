@@ -20,12 +20,16 @@ ASP.NET Core MVC web application (.NET 9.0) serving as a school/institution mana
 | ORM | Entity Framework Core 9.0 |
 | Database (dev) | SQL Server LocalDB (`MSSQLLocalDB`) |
 | Database (prod) | SQL Server (connection string via env/secrets) |
-| Real-time | SignalR (`/kartOkuHub`) |
+| Database (alt) | SQLite (also supported via `Microsoft.EntityFrameworkCore.Sqlite`) |
+| Real-time | SignalR 1.2.0 (`/kartOkuHub`) |
 | Excel export | ClosedXML 0.104.2 |
 | Resilience | Polly 8.5.2 |
-| Hardware | ZKTeco COM interop (`zkemkeeper`) |
+| Serial comms | System.IO.Ports 9.0.7 |
+| Hardware | ZKTeco COM interop (`zkemkeeper`, x86 Windows-only) |
 | Auth | Cookie authentication (8-hour sliding session) |
-| Static assets | libman, Chart.js, site.js |
+| UI framework | Bootstrap 5.3.3, jQuery 3.7.1, Font Awesome 6.7.2 |
+| Charts | Chart.js (via libman) |
+| Client libs | libman (manages wwwroot/lib downloads) |
 
 ---
 
@@ -35,18 +39,22 @@ ASP.NET Core MVC web application (.NET 9.0) serving as a school/institution mana
 # Build
 dotnet build
 
-# Run (development)
+# Run (development) — served at http://localhost:5135 or https://localhost:7045
 dotnet run
 
-# EF Core migrations
+# EF Core migrations (uses local tool from .config/dotnet-tools.json)
 dotnet ef migrations add <MigrationName>
 dotnet ef database update
+
+# Restore client-side libraries (Bootstrap, jQuery, Chart.js, etc.)
+libman restore
 
 # Publish
 dotnet publish -c Release
 ```
 
 > No test project exists in the solution. Tests are listed as a P2 roadmap item.
+> There is no `README.md` in the repo — this `CLAUDE.md` is the primary reference document.
 
 ---
 
@@ -101,9 +109,12 @@ OgrenciBilgiSistemiApp/
 │   ├── images/
 │   ├── lib/                 # Client-side libraries (libman managed)
 │   └── uploads/             # User-uploaded files (student photos etc.)
-├── Properties/              # launchSettings.json
+├── Properties/              # launchSettings.json (launch URLs: 5135/7045)
+├── .config/
+│   └── dotnet-tools.json    # Local EF Core CLI tool registration
 ├── appsettings.json
 ├── appsettings.Development.json
+├── libman.json              # Client library manifest (Bootstrap, jQuery, etc.)
 ├── Program.cs
 ├── OgrenciBilgiSistemi.csproj
 ├── OgrenciBilgiSistemi.sln
@@ -276,6 +287,8 @@ AkademikDonemHelper.FromDate(someDate);
 | `Hubs/KartOkuHub.cs` | SignalR hub for real-time card reads |
 | `ViewComponents/MenuViewComponent.cs` | Dynamic role-based nav menu |
 | `Helpers/AkademikDonemHelper.cs` | Academic year calculation |
+| `libman.json` | Client-side library manifest (Bootstrap, jQuery, Chart.js, SignalR) |
+| `.config/dotnet-tools.json` | Local EF CLI tool — run `dotnet tool restore` if `dotnet ef` is missing |
 | `AUTHORIZATION_MATRIX.md` | Authorization policy documentation |
 | `UYGULAMA_ANALIZI.md` | Deep technical analysis and improvement roadmap |
 | `appsettings.Development.json` | Local dev database connection |
