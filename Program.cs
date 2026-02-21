@@ -97,13 +97,25 @@ using (var scope = app.Services.CreateScope())
 
     try
     {
+        // Bağlantıyı doğrula (login/connection hatalarını hızlı yakalar)
         context.Database.OpenConnection();
         context.Database.CloseConnection();
+
+        // Migration: default sadece Development'ta çalışsın (Prod'da otomatik migration riskini azaltır)
+        // İstersen appsettings'ten BootstrapAdmin:ApplyMigrations=true diyerek açabilirsin.
+        var applyMigrations =
+            bootstrapSection.GetValue<bool?>("ApplyMigrations")
+            ?? app.Environment.IsDevelopment();
+
+        if (applyMigrations)
+        {
+            context.Database.Migrate();
+        }
     }
     catch (Exception ex)
     {
         logger.LogCritical(ex,
-            "Veritabanı bağlantısı kurulamadı. ConnectionStrings__DefaultConnection değerini, veritabanı adını ve kullanıcı yetkilerini kontrol edin.");
+            "Veritabanı bağlantısı kurulamadı veya migration uygulanamadı. ConnectionStrings__DefaultConnection değerini, veritabanı adını ve kullanıcı yetkilerini kontrol edin.");
         throw;
     }
 
