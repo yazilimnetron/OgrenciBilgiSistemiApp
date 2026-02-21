@@ -9,6 +9,7 @@ using OgrenciBilgiSistemi.Services.Implementations;
 using OgrenciBilgiSistemi.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
+var bootstrapSection = builder.Configuration.GetSection("Bootstrap");
 var environment = builder.Environment;
 
 // 🔗 Veritabanı bağlantısı
