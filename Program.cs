@@ -1,11 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using OgrenciBilgiSistemi.Abstractions;
 using OgrenciBilgiSistemi.Data;
 using OgrenciBilgiSistemi.Hubs;
-using OgrenciBilgiSistemi.Models;
 using OgrenciBilgiSistemi.Services;
 using OgrenciBilgiSistemi.Services.Implementations;
 using OgrenciBilgiSistemi.Services.Interfaces;
@@ -83,17 +81,11 @@ builder.Services.AddAuthorization(options =>
 
 var app = builder.Build();
 
-// 🌱 Bootstrap admin kullanıcı seed işlemi (güvenli kurulum)
+// 🌱 Veritabanı migration işlemi
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("BootstrapAdmin");
-    var passwordHasher = new PasswordHasher<KullaniciModel>();
-    var bootstrapSection = builder.Configuration.GetSection("BootstrapAdmin");
-
-    var bootstrapEnabled = bootstrapSection.GetValue<bool?>("Enabled") ?? false;
-    var bootstrapUsername = bootstrapSection["Username"];
-    var bootstrapPassword = bootstrapSection["Password"];
+    var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Startup");
 
     try
     {
@@ -117,52 +109,6 @@ using (var scope = app.Services.CreateScope())
         logger.LogCritical(ex,
             "Veritabanı bağlantısı kurulamadı veya migration uygulanamadı. ConnectionStrings__DefaultConnection değerini, veritabanı adını ve kullanıcı yetkilerini kontrol edin.");
         throw;
-    }
-
-    if (app.Environment.IsProduction() && bootstrapEnabled &&
-        (string.IsNullOrWhiteSpace(bootstrapUsername) || string.IsNullOrWhiteSpace(bootstrapPassword)))
-    {
-        throw new InvalidOperationException(
-            "Production ortamında BootstrapAdmin etkinse BootstrapAdmin:Username ve BootstrapAdmin:Password zorunludur.");
-    }
-
-    if (!bootstrapEnabled)
-    {
-        logger.LogInformation("Bootstrap admin oluşturma devre dışı bırakıldı (BootstrapAdmin:Enabled=false).");
-    }
-    else if (string.IsNullOrWhiteSpace(bootstrapUsername) || string.IsNullOrWhiteSpace(bootstrapPassword))
-    {
-        logger.LogWarning(
-            "Bootstrap admin atlandı. BootstrapAdmin:Username ve BootstrapAdmin:Password ayarlanmalı (tercihen environment variable/secrets ile).");
-    }
-    else
-    {
-        var admin = context.Kullanicilar.FirstOrDefault(k => k.KullaniciAdi == bootstrapUsername);
-
-        if (admin != null)
-        {
-            if (string.IsNullOrWhiteSpace(admin.Sifre) || !admin.Sifre.StartsWith("AQ"))
-            {
-                admin.Sifre = passwordHasher.HashPassword(admin, bootstrapPassword);
-                context.SaveChanges();
-                logger.LogInformation("Mevcut bootstrap admin şifresi güvenli hash ile güncellendi.");
-            }
-        }
-        else
-        {
-            var yeniAdmin = new KullaniciModel
-            {
-                KullaniciAdi = bootstrapUsername,
-                AdminMi = true,
-                KullaniciDurum = true,
-                BeniHatirla = false,
-                BirimId = null
-            };
-            yeniAdmin.Sifre = passwordHasher.HashPassword(yeniAdmin, bootstrapPassword);
-            context.Kullanicilar.Add(yeniAdmin);
-            context.SaveChanges();
-            logger.LogInformation("Bootstrap admin kullanıcısı oluşturuldu: {Username}", bootstrapUsername);
-        }
     }
 }
 

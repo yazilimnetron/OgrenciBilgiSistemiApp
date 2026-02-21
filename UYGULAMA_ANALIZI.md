@@ -30,7 +30,6 @@
   - Global `AuthorizeFilter` ile tüm MVC endpointlerinin varsayılan olarak kimlik doğrulamaya alınması.
   - Cookie auth (`ExpireTimeSpan=8 saat`, sliding enabled).
   - SignalR hub mapping (`/kartOkuHub`).
-  - `BootstrapAdmin` yapılandırması üzerinden admin seed akışı (config boşsa kullanıcı üretmiyor, sadece uyarı logluyor).
 
 ### 3.2 AuthN / AuthZ yaklaşımı
 - Güçlü taraf:
