@@ -27,7 +27,11 @@ if (environment.IsProduction() && connectionString.Contains("DESKTOP-", StringCo
 }
 
 builder.Services.AddDbContextPool<AppDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString, sqlServerOptions =>
+        sqlServerOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(10),
+            errorNumbersToAdd: null)));
 
 // 💼 Servislerin eklenmesi
 builder.Services.AddControllersWithViews(options =>
@@ -90,6 +94,18 @@ using (var scope = app.Services.CreateScope())
     var bootstrapEnabled = bootstrapSection.GetValue<bool?>("Enabled") ?? false;
     var bootstrapUsername = bootstrapSection["Username"];
     var bootstrapPassword = bootstrapSection["Password"];
+
+    try
+    {
+        context.Database.OpenConnection();
+        context.Database.CloseConnection();
+    }
+    catch (Exception ex)
+    {
+        logger.LogCritical(ex,
+            "Veritabanı bağlantısı kurulamadı. ConnectionStrings__DefaultConnection değerini, veritabanı adını ve kullanıcı yetkilerini kontrol edin.");
+        throw;
+    }
 
     if (app.Environment.IsProduction() && bootstrapEnabled &&
         (string.IsNullOrWhiteSpace(bootstrapUsername) || string.IsNullOrWhiteSpace(bootstrapPassword)))
