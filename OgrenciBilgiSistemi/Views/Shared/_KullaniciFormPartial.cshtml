@@ -1,0 +1,122 @@
+﻿@model OgrenciBilgiSistemi.Models.KullaniciModel
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+@{
+    var action = (ViewData["Action"] as string) ?? "Ekle";      // "Ekle" | "Guncelle"
+    var submitText = (ViewData["SubmitText"] as string) ?? "Kaydet";    // "Kaydet" | "Güncelle"
+    var includeId = (bool?)ViewData["IncludeId"] ?? false;       // Güncelle'de true
+
+    var formId = "kullaniciForm";
+    var submitBtnId = "submitBtn";
+
+    var birimler = Model?.Birimler ?? new List<SelectListItem>();
+}
+
+<div class="viewport-scroller">
+    <div class="fixed-canvas">
+        <div class="container py-4">
+            <div class="row justify-content-center">
+                <div class="col-lg-6 col-xxl-5">
+                    <div class="card rounded-3 border">
+                        <div class="card-header bg-primary text-white text-center">
+                            <h4 class="fw-bold mb-0">
+                                @(action == "Ekle" ? "Kullanıcı Ekle" : "Kullanıcı Güncelle")
+                            </h4>
+                        </div>
+
+                        <div class="card-body p-4">
+                            <form method="post" asp-action="@action" id="@formId" autocomplete="off">
+                                @Html.AntiForgeryToken()
+
+                                @if (includeId)
+                                {
+                                    <input type="hidden" asp-for="KullaniciId" />
+                                }
+
+                                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                                <!-- Kullanıcı Adı -->
+                                <div class="mb-3">
+                                    <label asp-for="KullaniciAdi" class="form-label fw-semibold">Kullanıcı Adı</label>
+                                    <input asp-for="KullaniciAdi"
+                                           class="form-control"
+                                           required minlength="3"
+                                           placeholder="Kullanıcı adı giriniz" />
+                                    <span asp-validation-for="KullaniciAdi" class="text-danger"></span>
+                                </div>
+
+                                <!-- Şifre -->
+                                <div class="mb-3">
+                                    <label asp-for="Sifre" class="form-label fw-semibold">Şifre</label>
+                                    <input asp-for="Sifre"
+                                           class="form-control"
+                                           type="password"
+                                           required minlength="3"
+                                           placeholder="Şifre giriniz" />
+                                    <span asp-validation-for="Sifre" class="text-danger"></span>
+                                </div>
+
+                                <!-- Kullanıcı Durumu -->
+                                <div class="mb-3">
+                                    <label asp-for="KullaniciDurum" class="form-label fw-semibold">Kullanıcı Durumu</label>
+                                    <select asp-for="KullaniciDurum" class="form-select">
+                                        <option value="true">Aktif</option>
+                                        <option value="false">Pasif</option>
+                                    </select>
+                                    <span asp-validation-for="KullaniciDurum" class="text-danger"></span>
+                                </div>
+
+                                <!-- Admin Mi? -->
+                                <div class="mb-3">
+                                    <label asp-for="AdminMi" class="form-label fw-semibold">Admin Mi?</label>
+                                    <select asp-for="AdminMi" class="form-select">
+                                        <option value="true">Evet</option>
+                                        <option value="false">Hayır</option>
+                                    </select>
+                                    <span asp-validation-for="AdminMi" class="text-danger"></span>
+                                </div>
+
+                                <!-- Birim -->
+                                <div class="mb-4">
+                                    <label asp-for="BirimId" class="form-label fw-semibold">Birimi</label>
+                                    <select asp-for="BirimId" class="form-select" asp-items="birimler" required>
+                                        <option value="">-- Seçiniz --</option>
+                                    </select>
+                                    <span asp-validation-for="BirimId" class="text-danger"></span>
+                                </div>
+
+                                <!-- Butonlar -->
+                                <div class="d-flex justify-content-between gap-2">
+                                    <a asp-action="Index" class="btn btn-outline-secondary">
+                                        <i class="bi bi-arrow-left"></i> Geri Dön
+                                    </a>
+                                    <button type="submit" class="btn btn-primary fw-bold" id="@submitBtnId">
+                                        <i class="bi bi-save"></i> @submitText
+                                    </button>
+                                </div>
+                            </form>
+                        </div> <!-- /card-body -->
+                    </div> <!-- /card -->
+                </div>
+            </div>
+        </div> <!-- /container -->
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Double-submit koruması (spinner yok)
+        (function () {
+            const form = document.getElementById('@formId');
+            const btn  = document.getElementById('@submitBtnId');
+            if (!form || !btn) return;
+
+            form.addEventListener('submit', function () {
+                if (form.checkValidity()) {
+                    btn.disabled = true;
+                    btn.textContent = '@(submitText.EndsWith("e") ? submitText + "iliyor..." : submitText + "iyor...")';
+                }
+            });
+        })();
+    </script>
+}

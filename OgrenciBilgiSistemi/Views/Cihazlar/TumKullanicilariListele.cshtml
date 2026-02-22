@@ -1,0 +1,72 @@
+﻿@using OgrenciBilgiSistemi.Dtos
+
+@model List<ZkUserDto>
+@{
+    ViewData["Title"] = "Cihaz Kullanıcıları";
+    var cihazId = (int)ViewBag.CihazId;
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">Cihaz @cihazId – Kullanıcılar (@Model.Count)</h3>
+        <div class="d-flex gap-2">
+            <a asp-action="Index" class="btn btn-outline-secondary">Cihaz Listesine Dön</a>
+            <form asp-action="TumKullanicilariSil" method="post"
+                  onsubmit="return confirm('Bu cihazdaki TÜM kullanıcılar silinecek. Emin misiniz?');">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="cihazId" value="@cihazId" />
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-person-x"></i> Tümünü Sil
+                </button>
+            </form>
+        </div>
+    </div>
+
+    @if (TempData["Message"] is string ok && !string.IsNullOrWhiteSpace(ok))
+    {
+        <div class="alert alert-success">@ok</div>
+    }
+    @if (TempData["Error"] is string err && !string.IsNullOrWhiteSpace(err))
+    {
+        <div class="alert alert-danger">@err</div>
+    }
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>UserId</th>
+                        <th>Ad</th>
+                        <th>Yetki</th>
+                        <th>Aktif</th>
+                        <th>Kart No</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model == null || Model.Count == 0)
+                    {
+                        <tr><td colspan="6" class="text-muted">Kayıt bulunamadı.</td></tr>
+                    }
+                    else
+                    {
+                        var i = 1;
+                        foreach (var u in Model)
+                        {
+                            <tr>
+                                <td>@i</td>
+                                <td>@u.UserId</td>
+                                <td>@(u.Name ?? "-")</td>
+                                <td>@u.Privilege</td>
+                                <td>@(u.Enabled ? "Evet" : "Hayır")</td>
+                                <td>@(string.IsNullOrWhiteSpace(u.CardNumber) ? "-" : u.CardNumber)</td>
+                            </tr>
+                            i++;
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
