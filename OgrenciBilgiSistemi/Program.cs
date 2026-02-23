@@ -4,7 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using OgrenciBilgiSistemi.Abstractions;
 using OgrenciBilgiSistemi.Data;
 using OgrenciBilgiSistemi.Hubs;
+using OgrenciBilgiSistemi.Infrastructure.FileStorage;
 using OgrenciBilgiSistemi.Services;
+using OgrenciBilgiSistemi.Services.BackgroundServices;
 using OgrenciBilgiSistemi.Services.Implementations;
 using OgrenciBilgiSistemi.Services.Interfaces;
 

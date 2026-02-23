@@ -28,10 +28,27 @@ namespace OgrenciBilgiSistemi.Data
         public DbSet<OgrenciYemekTarifeModel> OgrenciYemekTarifeler { get; set; }
         public DbSet<OgrenciYemekOdemeModel> OgrenciYemekOdemeler { get; set; }
         public DbSet<ZiyaretciModel> Ziyaretciler { get; set; }
+        public DbSet<OgretmenModel> Ogretmenler { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // =========================
+            // OGRETMEN
+            // OgretmenModel.Ogrenciler navigasyon özelliği yoksayılır;
+            // OgrenciModel'de OgretmenId FK alanı bulunmadığından EF
+            // shadow property oluşturmasın diye Ignore kullanıyoruz.
+            // =========================
+            modelBuilder.Entity<OgretmenModel>()
+                .Ignore(t => t.Ogrenciler);
+
+            modelBuilder.Entity<OgretmenModel>()
+                .HasOne(t => t.Birim)
+                .WithMany()
+                .HasForeignKey(t => t.BirimId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .IsRequired(false);
 
             // =========================
             // GLOBAL QUERY FILTER

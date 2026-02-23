@@ -869,6 +869,39 @@ namespace OgrenciBilgiSistemi.Migrations
                     b.ToTable("Personeller");
                 });
 
+            modelBuilder.Entity("OgrenciBilgiSistemi.Models.OgretmenModel", b =>
+                {
+                    b.Property<int>("OgretmenId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OgretmenId"));
+
+                    b.Property<string>("OgretmenAdSoyad")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("OgretmenGorsel")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("OgretmenDurum")
+                        .HasDefaultValue(true)
+                        .HasColumnType("bit");
+
+                    b.Property<string>("OgretmenKartNo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("BirimId")
+                        .HasColumnType("int");
+
+                    b.HasKey("OgretmenId");
+
+                    b.HasIndex("BirimId");
+
+                    b.ToTable("Ogretmenler");
+                });
+
             modelBuilder.Entity("OgrenciBilgiSistemi.Models.ZiyaretciModel", b =>
                 {
                     b.Property<int>("ZiyaretciId")
@@ -1103,6 +1136,16 @@ namespace OgrenciBilgiSistemi.Migrations
                     b.HasOne("OgrenciBilgiSistemi.Models.BirimModel", "Birim")
                         .WithMany("Personeller")
                         .HasForeignKey("BirimId");
+
+                    b.Navigation("Birim");
+                });
+
+            modelBuilder.Entity("OgrenciBilgiSistemi.Models.OgretmenModel", b =>
+                {
+                    b.HasOne("OgrenciBilgiSistemi.Models.BirimModel", "Birim")
+                        .WithMany()
+                        .HasForeignKey("BirimId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Birim");
                 });

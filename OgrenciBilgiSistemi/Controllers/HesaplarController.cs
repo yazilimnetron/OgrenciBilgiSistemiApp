@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OgrenciBilgiSistemi.Data;
+using OgrenciBilgiSistemi.Dtos;
 using OgrenciBilgiSistemi.Models;
 using System.Security.Claims;
 
@@ -26,40 +27,36 @@ namespace OgrenciBilgiSistemi.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Giris(KullaniciModel model)
+        public async Task<IActionResult> Giris(LoginDto dto)
         {
             if (!ModelState.IsValid)
-                return View(model);
+                return View(dto);
 
             var user = await _context.Kullanicilar
                 .Where(k => k.KullaniciDurum)
-                .SingleOrDefaultAsync(u => u.KullaniciAdi == model.KullaniciAdi);
+                .SingleOrDefaultAsync(u => u.KullaniciAdi == dto.KullaniciAdi);
 
             if (user == null)
             {
                 ModelState.AddModelError(string.Empty, "Geçersiz kullanıcı adı veya şifre.");
-                return View(model);
+                return View(dto);
             }
 
             // Şifre doğrulaması
             var passwordHasher = new PasswordHasher<KullaniciModel>();
-            var result = passwordHasher.VerifyHashedPassword(user, user.Sifre, model.Sifre);
+            var result = passwordHasher.VerifyHashedPassword(user, user.Sifre, dto.Sifre);
             if (result != PasswordVerificationResult.Success)
             {
                 ModelState.AddModelError(string.Empty, "Geçersiz kullanıcı adı veya şifre.");
-                return View(model);
+                return View(dto);
             }
 
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.KullaniciAdi),
-
                 new Claim(ClaimTypes.NameIdentifier, user.KullaniciId.ToString()),
-
                 new Claim("userid", user.KullaniciId.ToString()),
-
                 new Claim("KullaniciId", user.KullaniciId.ToString()),
-
                 new Claim("sub", user.KullaniciId.ToString())
             };
 
@@ -72,7 +69,7 @@ namespace OgrenciBilgiSistemi.Controllers
 
             var authProperties = new AuthenticationProperties
             {
-                IsPersistent = model.BeniHatirla
+                IsPersistent = dto.BeniHatirla
             };
 
             await HttpContext.SignInAsync(

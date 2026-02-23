@@ -15,6 +15,7 @@ namespace OgrenciBilgiSistemi.Models
         public string KullaniciAdi { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Şifre gereklidir.")]
+        [MinLength(6, ErrorMessage = "Şifre en az 6 karakter olmalıdır.")]
         [DataType(DataType.Password)]
         public string Sifre { get; set; } = string.Empty;
 

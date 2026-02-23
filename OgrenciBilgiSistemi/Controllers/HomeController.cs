@@ -1,18 +1,17 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OgrenciBilgiSistemi.Data;
 using OgrenciBilgiSistemi.Dtos;
 using OgrenciBilgiSistemi.Models.Enums;
 
-public class HomeController : Controller
+namespace OgrenciBilgiSistemi.Controllers
 {
-    private readonly AppDbContext _db;
-    public HomeController(AppDbContext db) { _db = db; }
+    public class HomeController : Controller
+    {
+        private readonly AppDbContext _db;
+        public HomeController(AppDbContext db) { _db = db; }
 
-    public IActionResult Index() => View();
+        public IActionResult Index() => View();
 
     // --- KPI'lar (bugünün özeti) ---
     [HttpGet]
@@ -96,5 +95,6 @@ public class HomeController : Controller
         }
 
         return Json(dto);
+        }
     }
 }
