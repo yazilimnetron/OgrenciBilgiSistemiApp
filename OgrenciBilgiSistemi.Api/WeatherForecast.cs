@@ -1,4 +1,4 @@
-namespace StudentTrackingSystem.Api
+namespace OgrenciBilgiSistemi.Api
 {
     public class WeatherForecast
     {

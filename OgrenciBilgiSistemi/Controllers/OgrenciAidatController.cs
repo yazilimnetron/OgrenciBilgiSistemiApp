@@ -336,10 +336,7 @@ namespace OgrenciBilgiSistemi.Controllers
             var ok = await _aidatService.OdemeSilAsync(odemeId, ct);
             TempData[ok ? "Bilgi" : "Hata"] = ok ? "Ödeme silindi." : "Ödeme bulunamadı.";
 
-            if (!string.IsNullOrWhiteSpace(returnUrl))
-                return Redirect(returnUrl);
-
-            return RedirectToAction(nameof(Ozet), new { ogrenciId, yil });
+            return SafeRedirect(returnUrl, nameof(Ozet), new { ogrenciId, yil });
         }
 
         // -------------------------------------------------------------
@@ -394,23 +391,9 @@ namespace OgrenciBilgiSistemi.Controllers
             return RedirectToAction(nameof(Ozet), new { ogrenciId, yil });
         }
 
-        [HttpGet("MuafiyetAyarla")]
-        public async Task<IActionResult> MuafiyetAyarlaGet(int ogrenciId, int yil, bool muaf, string? returnUrl, CancellationToken ct = default)
-        {
-            // İSTEK: GET çağrısında da JSON yerine mesaj + yönlendirme
-            var ok = await _aidatService.SetYillikMuafiyetAsync(ogrenciId, yil, muaf, ct);
-
-            TempData[ok ? "Success" : "Error"] = ok
-                ? (muaf
-                    ? "Öğrenci ilgili yıl için MUAF yapıldı."
-                    : "Öğrencinin yıllık muafiyeti KALDIRILDI.")
-                : "Muafiyet işlemi başarısız.";
-
-            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
-                return LocalRedirect(returnUrl);
-
-            return RedirectToAction(nameof(Ozet), new { ogrenciId, yil });
-        }
+        // MuafiyetAyarlaGet kaldırıldı: GET isteğiyle veritabanı değişikliği
+        // CSRF saldırısına açık olduğu için bu action silinmiştir.
+        // Muafiyet değişikliği yalnızca [HttpPost] MuafiyetAyarla üzerinden yapılmalıdır.
 
         // -------------------------------------------------------------
         // Yardımcı

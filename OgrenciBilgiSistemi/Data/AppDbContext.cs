@@ -204,6 +204,30 @@ namespace OgrenciBilgiSistemi.Data
             });
 
             // =========================
+            // UNIQUE INDEKSLER
+            // =========================
+
+            // Öğrenci numarası — her numara yalnızca bir öğrenciye ait olabilir
+            modelBuilder.Entity<OgrenciModel>()
+                .HasIndex(o => o.OgrenciNo)
+                .IsUnique()
+                .HasDatabaseName("UX_Ogrenciler_OgrenciNo");
+
+            // Kart numarası — bir kart birden fazla öğrenciye atanamaz
+            // Boş/null değerler benzersizlik kapsamı dışında tutulur
+            modelBuilder.Entity<OgrenciModel>()
+                .HasIndex(o => o.OgrenciKartNo)
+                .IsUnique()
+                .HasFilter("[OgrenciKartNo] IS NOT NULL AND [OgrenciKartNo] != ''")
+                .HasDatabaseName("UX_Ogrenciler_OgrenciKartNo");
+
+            // Kullanıcı adı — tüm kayıtlar arasında benzersiz olmalı
+            modelBuilder.Entity<KullaniciModel>()
+                .HasIndex(k => k.KullaniciAdi)
+                .IsUnique()
+                .HasDatabaseName("UX_Kullanicilar_KullaniciAdi");
+
+            // =========================
             // KULLANICI-MENU (M:N)
             // =========================
             modelBuilder.Entity<KullaniciMenuModel>()

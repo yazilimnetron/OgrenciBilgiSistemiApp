@@ -1,10 +1,10 @@
 ﻿#region Kütüphane Referansları
 using Microsoft.Data.SqlClient;
-using StudentTrackingSystem.Api.Models; // Doğru referans: .Api.Models
+using OgrenciBilgiSistemi.Api.Models; // Doğru referans: .Api.Models
 using System.Data;
 #endregion
 
-namespace StudentTrackingSystem.Api.Services
+namespace OgrenciBilgiSistemi.Api.Services
 {
     #region Öğrenci ve Yoklama Servisi
     public class StudentService

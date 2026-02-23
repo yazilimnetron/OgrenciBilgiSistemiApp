@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-namespace StudentTrackingSystem.Api.Models
+namespace OgrenciBilgiSistemi.Api.Models
 {
     public class User
     {

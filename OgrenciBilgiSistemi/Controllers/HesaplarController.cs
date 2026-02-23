@@ -83,6 +83,8 @@ namespace OgrenciBilgiSistemi.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         [Authorize]
         public async Task<IActionResult> Cikis()
         {

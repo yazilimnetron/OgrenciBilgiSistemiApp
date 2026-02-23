@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace StudentTrackingSystem.Api.Controllers
+namespace OgrenciBilgiSistemi.Api.Controllers
 {
     [ApiController]
     [Route("[controller]")]

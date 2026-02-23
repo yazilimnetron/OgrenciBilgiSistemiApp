@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace StudentTrackingSystem.Api.Models
+namespace OgrenciBilgiSistemi.Api.Models
 {
     #region Veli Veri Modeli Tanımı
     public class Parent

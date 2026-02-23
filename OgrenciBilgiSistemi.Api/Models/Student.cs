@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-namespace StudentTrackingSystem.Api.Models
+namespace OgrenciBilgiSistemi.Api.Models
 {
     public class Student
     {

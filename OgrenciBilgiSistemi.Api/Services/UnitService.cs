@@ -1,11 +1,11 @@
 ﻿#region Kütüphane Referansları
 using Microsoft.Data.SqlClient;
-using StudentTrackingSystem.Api.Models;
+using OgrenciBilgiSistemi.Api.Models;
 using System;
 using System.Threading.Tasks;
 #endregion
 
-namespace StudentTrackingSystem.Api.Services
+namespace OgrenciBilgiSistemi.Api.Services
 {
     public class UnitService
     {

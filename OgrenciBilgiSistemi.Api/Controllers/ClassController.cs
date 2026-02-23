@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using StudentTrackingSystem.Api.Services;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using OgrenciBilgiSistemi.Api.Services;
 
-namespace StudentTrackingSystem.Api.Controllers
+namespace OgrenciBilgiSistemi.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class ClassController : ControllerBase
     {
         private readonly ClassService _classService;

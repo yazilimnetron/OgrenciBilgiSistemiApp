@@ -1,4 +1,4 @@
-﻿namespace StudentTrackingSystem.Api.Models
+﻿namespace OgrenciBilgiSistemi.Api.Models
 {
     public class UnitWithCountDto
     {

@@ -1,49 +1,86 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using StudentTrackingSystem.Api.Models;
-using StudentTrackingSystem.Api.Services;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using OgrenciBilgiSistemi.Api.Models;
+using OgrenciBilgiSistemi.Api.Services;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
-namespace StudentTrackingSystem.Api.Controllers
+namespace OgrenciBilgiSistemi.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly LoginService _loginService;
+        private readonly LoginService  _loginService;
+        private readonly IConfiguration _config;
 
-        public AuthController(LoginService loginService)
+        public AuthController(LoginService loginService, IConfiguration config)
         {
             _loginService = loginService;
+            _config       = config;
         }
-        /*
+
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] User loginRequest)
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            if (loginRequest == null || string.IsNullOrEmpty(loginRequest.Username))
-                return BadRequest("Geçersiz istek.");
+            if (string.IsNullOrWhiteSpace(request.Username) ||
+                string.IsNullOrWhiteSpace(request.Password))
+                return BadRequest("Kullanıcı adı veya şifre boş olamaz.");
 
-            var user = await _loginService.AuthenticateAsync(loginRequest.Username, loginRequest.Password);
+            var user = await _loginService.AuthenticateAsync(request.Username, request.Password);
 
-            if (user != null)
+            if (user is null)
+                return Unauthorized("Kullanıcı adı veya şifre hatalı.");
+
+            var token = GenerateJwtToken(user);
+
+            return Ok(new
             {
-                // Başarılı giriş: Kullanıcı nesnesini döndür
-                return Ok(user);
-            }
+                token,
+                expiresIn = _config.GetValue<int>("JwtSettings:ExpiresInMinutes", 480) * 60,
+                user = new
+                {
+                    user.Id,
+                    user.Username,
+                    user.UnitId,
+                    user.IsActive
+                }
+            });
+        }
 
-            return Unauthorized("Kullanıcı adı veya şifre hatalı.");
-        }*/
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] User loginRequest)
+        private string GenerateJwtToken(User user)
         {
-            // Gelen veriyi loglayarak kontrol et (Debug penceresinden bakabilirsin)
-            if (loginRequest == null || string.IsNullOrEmpty(loginRequest.Username))
-                return BadRequest("Kullanıcı adı veya şifre boş geldi.");
+            var secret   = _config["JwtSettings:SecretKey"]!;
+            var issuer   = _config["JwtSettings:Issuer"]   ?? "OgrenciBilgiSistemiApi";
+            var audience = _config["JwtSettings:Audience"] ?? "OgrenciBilgiSistemiClient";
+            var minutes  = _config.GetValue<int>("JwtSettings:ExpiresInMinutes", 480);
 
-            var user = await _loginService.AuthenticateAsync(loginRequest.Username, loginRequest.Password);
+            var key   = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            if (user != null)
-                return Ok(user);
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub,  user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.Name, user.Username),
+                new Claim(JwtRegisteredClaimNames.Jti,  Guid.NewGuid().ToString()),
+                new Claim("userid", user.Id.ToString())
+            };
 
-            return Unauthorized("Kullanıcı bulunamadı.");
+            if (user.UnitId.HasValue)
+                claims.Add(new Claim("unitid", user.UnitId.Value.ToString()));
+
+            var token = new JwtSecurityToken(
+                issuer:             issuer,
+                audience:           audience,
+                claims:             claims,
+                notBefore:          DateTime.UtcNow,
+                expires:            DateTime.UtcNow.AddMinutes(minutes),
+                signingCredentials: creds);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
+
+    public record LoginRequest(string Username, string Password);
 }

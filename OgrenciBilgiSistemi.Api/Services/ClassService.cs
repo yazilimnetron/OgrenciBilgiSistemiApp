@@ -1,7 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
-using StudentTrackingSystem.Api.Models;
+using OgrenciBilgiSistemi.Api.Models;
 
-namespace StudentTrackingSystem.Api.Services
+namespace OgrenciBilgiSistemi.Api.Services
 {
     public class ClassService
     {
