@@ -1,4 +1,7 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using OgrenciBilgiSistemi.Api.Services;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +13,12 @@ if (string.IsNullOrWhiteSpace(connectionString))
     throw new InvalidOperationException(
         "ConnectionStrings:DefaultConnection yapılandırılmamış. " +
         "Environment variable veya appsettings.Development.json kullanın.");
+
+var jwtKey = builder.Configuration["Jwt:SecretKey"];
+if (string.IsNullOrWhiteSpace(jwtKey))
+    throw new InvalidOperationException(
+        "Jwt:SecretKey yapılandırılmamış. " +
+        "appsettings.Development.json veya ortam değişkeni kullanın.");
 
 // --------------------
 // CORS — yalnızca yapılandırılmış originler
@@ -34,6 +43,25 @@ builder.Services.AddCors(options =>
 });
 
 // --------------------
+// JWT Kimlik Doğrulama
+// --------------------
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer           = true,
+            ValidateAudience         = true,
+            ValidateLifetime         = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer              = builder.Configuration["Jwt:Issuer"],
+            ValidAudience            = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey         = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey!))
+        };
+    });
+builder.Services.AddAuthorization();
+
+// --------------------
 // Servisler
 // --------------------
 builder.Services.AddControllers();
@@ -53,6 +81,10 @@ app.UseCors("ConfiguredOrigins");
 
 app.UseSwagger();
 app.UseSwaggerUI();
+
+// Kimlik doğrulama ve yetkilendirme middleware'i
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 app.Run();
