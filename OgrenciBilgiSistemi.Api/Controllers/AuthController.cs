@@ -44,6 +44,7 @@ namespace OgrenciBilgiSistemi.Api.Controllers
                 {
                     user.Id,
                     user.Username,
+                    user.FullName,
                     user.UnitId,
                     user.IsActive,
                     user.IsAdmin
