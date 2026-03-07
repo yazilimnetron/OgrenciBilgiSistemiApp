@@ -48,8 +48,5 @@
     <Folder Include="wwwroot\uploads\" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="ViewModels\OgrenciVeliFormVm.cs" />
-  </ItemGroup>
 
 </Project>

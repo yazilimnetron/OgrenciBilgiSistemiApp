@@ -69,20 +69,7 @@ public class CardReadEventHandlerService : IHostedService
                 return;
             }
 
-            // 3) Aynı gün + aynı kapı için açık kayıt var mı? → yön kararı
-            var dayStart = now.Date;
-            var dayEnd = dayStart.AddDays(1);
-
-            var acikVar = await db.OgrenciDetaylar.AsNoTracking().AnyAsync(x =>
-                x.OgrenciId == ogr.OgrenciId &&
-                x.IstasyonTipi == cihaz.IstasyonTipi &&
-                x.OgrenciCTarih == null &&
-                x.OgrenciGTarih >= dayStart &&
-                x.OgrenciGTarih < dayEnd);
-
-            var girisMi = !acikVar; // açık yoksa GİRİŞ, varsa ÇIKIŞ
-
-            // 4) Geçişi kaydet
+            // 3) Geçişi kaydet — yön kararı (giriş/çıkış) GecisService.KaydetAsync içinde belirlenir
             await svc.KaydetAsync(cihaz.CihazId, ogr.OgrenciId, cihaz.IstasyonTipi, now);
         }
         catch (Exception ex)

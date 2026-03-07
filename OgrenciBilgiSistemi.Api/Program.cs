@@ -82,6 +82,7 @@ var app = builder.Build();
 // --------------------
 // Middleware sırası
 // --------------------
+app.UseHttpsRedirection();
 app.UseCors("ConfiguredOrigins");
 
 app.UseSwagger();

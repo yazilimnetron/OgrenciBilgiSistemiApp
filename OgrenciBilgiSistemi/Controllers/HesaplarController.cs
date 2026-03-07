@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OgrenciBilgiSistemi.Data;
+using OgrenciBilgiSistemi.Dtos;
 using OgrenciBilgiSistemi.Models;
 using System.Security.Claims;
 
@@ -26,11 +27,12 @@ namespace OgrenciBilgiSistemi.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Giris(KullaniciModel model)
+        public async Task<IActionResult> Giris(GirisIstegiDto model)
         {
             if (!ModelState.IsValid)
                 return View(model);
 
+            // Yalnızca KullaniciAdi ile sorgula; şifre C# katmanında doğrulanır
             var user = await _context.Kullanicilar
                 .Where(k => k.KullaniciDurum)
                 .SingleOrDefaultAsync(u => u.KullaniciAdi == model.KullaniciAdi);
@@ -53,20 +55,14 @@ namespace OgrenciBilgiSistemi.Controllers
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.KullaniciAdi),
-
                 new Claim(ClaimTypes.NameIdentifier, user.KullaniciId.ToString()),
-
                 new Claim("userid", user.KullaniciId.ToString()),
-
                 new Claim("KullaniciId", user.KullaniciId.ToString()),
-
                 new Claim("sub", user.KullaniciId.ToString())
             };
 
             if (user.AdminMi)
-            {
                 claims.Add(new Claim(ClaimTypes.Role, "Admin"));
-            }
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 

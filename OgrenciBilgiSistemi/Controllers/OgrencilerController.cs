@@ -20,8 +20,6 @@ namespace OgrenciBilgiSistemi.Controllers
         private readonly IBirimService _birimService;
         private readonly IPersonelService _personelService;
 
-        public bool IncludePasifOgrenciler { get; set; } = false;
-
         public OgrencilerController(
             AppDbContext context,
             ILogger<OgrencilerController> logger,
@@ -48,6 +46,7 @@ namespace OgrenciBilgiSistemi.Controllers
             string searchString,
             int? pageNumber,
             int? birimId,
+            bool includePasif = false,
             CancellationToken ct = default)
         {
             var page = await _ogrenciService.SearchPagedAsync(
@@ -55,7 +54,7 @@ namespace OgrenciBilgiSistemi.Controllers
                 searchString: searchString,
                 pageNumber: pageNumber.GetValueOrDefault(1),
                 birimId: birimId,
-                includePasif: IncludePasifOgrenciler,
+                includePasif: includePasif,
                 pageSize: 50,
                 ct: ct);
 
