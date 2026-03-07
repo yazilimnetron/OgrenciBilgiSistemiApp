@@ -18,6 +18,7 @@ namespace OgrenciBilgiSistemi.Models
         public string OgrenciAdSoyad { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Öğrenci numarası zorunludur!")]
+        [Range(1, int.MaxValue, ErrorMessage = "Öğrenci numarası 0'dan büyük olmalıdır!")]
         [Display(Name = "Öğrenci No")]
         public int OgrenciNo { get; set; }
 
